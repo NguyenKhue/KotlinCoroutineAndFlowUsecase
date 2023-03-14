@@ -1,7 +1,6 @@
 package com.khue.koltincoroutineandflowusecase
 
 import kotlinx.coroutines.*
-import kotlin.concurrent.thread
 
 val handler = CoroutineExceptionHandler { _, exception ->
     println("Caught $exception")
