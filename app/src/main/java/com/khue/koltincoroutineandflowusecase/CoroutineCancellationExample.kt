@@ -1,16 +1,23 @@
 package com.khue.koltincoroutineandflowusecase
 
 import kotlinx.coroutines.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
-val handler = CoroutineExceptionHandler { _, exception ->
+//https://medium.com/androiddevelopers/cancellation-in-coroutines-aa6b90163629
+//https://kotlinlang.org/docs/cancellation-and-timeouts.html#asynchronous-timeout-and-resources
+//https://kt.academy/article/cc-cancellation
+
+private val handler = CoroutineExceptionHandler { _, exception ->
     println("Caught $exception")
 }
 
 private fun main() = runBlocking(handler) {
-    coroutineCancellationCase8()
+    coroutineCancellationCase11()
     delay(10000L)
 }
 
+// Start Cooperative cancellation
 private suspend fun coroutineCancellationCase1() {
     val startTime = System.currentTimeMillis()
     val job = GlobalScope.launch(Dispatchers.Default) {
@@ -84,7 +91,9 @@ private suspend fun coroutineCancellationCase4() {
     job.cancelAndJoin() // cancels the job and waits for its completion
     println("main: Now I can quit.")
 }
+// End Cooperative cancellation
 
+// Start Timeout cancellation
 private suspend fun coroutineCancellationCase5() {
     withTimeout(1300L) {
         repeat(1000) { i ->
@@ -106,6 +115,9 @@ private suspend fun coroutineCancellationCase6() {
     println("Result is $result")
 }
 
+// End Timeout cancellation
+
+// Start Parent-child hierarchy cancellation
 private suspend fun coroutineCancellationCase7() {
     val job = Job()
     val coroutineScope = CoroutineScope(Dispatchers.Default + job)
@@ -153,6 +165,55 @@ private suspend fun coroutineCancellationCase8() {
     job.cancel()
 }
 
-// vd suspendCoroutine vs suspendCancellableCoroutine
-// nói về cancel and join
-// async await
+// End Parent-child hierarchy cancellation
+
+// Start job cancellation
+private suspend fun coroutineCancellationCase12() {
+    val job = Job()
+    val coroutineScope = CoroutineScope(Dispatchers.Default + job)
+
+    coroutineScope.launch {
+            delay(1000L)
+            println("job running")
+    }
+
+    delay(3000L)
+    job.cancel()
+}
+
+// End job cancellation
+
+
+
+// Other case
+private suspend fun coroutineCancellationCase11() {
+    val job = Job()
+    val coroutineScope = CoroutineScope(Dispatchers.Default + job)
+
+    coroutineScope.launch {
+        val deferred = async {
+            delay(1000L)
+            throw CancellationException("job2 cancelled")
+        }
+
+        deferred.cancel()
+        deferred.await()
+    }
+}
+private suspend fun coroutineCancellationCase9(): Boolean {
+    return suspendCoroutine {
+        Thread.sleep(1000L)
+        it.resume(true)
+    }
+}
+
+private suspend fun coroutineCancellationCase10(): Boolean {
+    return suspendCancellableCoroutine {
+        Thread.sleep(1000L)
+        it.resume(true)
+        it.invokeOnCancellation {
+            println("invokeOnCancellation")
+        }
+    }
+}
+
