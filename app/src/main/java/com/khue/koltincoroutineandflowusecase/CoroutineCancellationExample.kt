@@ -8,17 +8,8 @@ import kotlin.coroutines.suspendCoroutine
 //https://kotlinlang.org/docs/cancellation-and-timeouts.html#asynchronous-timeout-and-resources
 //https://kt.academy/article/cc-cancellation
 
-private val handler = CoroutineExceptionHandler { _, exception ->
-    println("Caught $exception")
-}
-
-private fun main() = runBlocking(handler) {
-    coroutineCancellationCase11()
-    delay(10000L)
-}
-
 // Start Cooperative cancellation
-private suspend fun coroutineCancellationCase1() {
+suspend fun coroutineCancellationCase1() {
     val startTime = System.currentTimeMillis()
     val job = GlobalScope.launch(Dispatchers.Default) {
         var nextPrintTime = startTime
@@ -37,7 +28,7 @@ private suspend fun coroutineCancellationCase1() {
     println("main: Now I can quit.")
 }
 
-private suspend fun coroutineCancellationCase2() {
+suspend fun coroutineCancellationCase2() {
     val job = GlobalScope.launch(Dispatchers.Default) {
         repeat(5) { i ->
             try {
@@ -56,7 +47,7 @@ private suspend fun coroutineCancellationCase2() {
     println("main: Now I can quit.")
 }
 
-private suspend fun coroutineCancellationCase3() {
+suspend fun coroutineCancellationCase3() {
     val startTime = System.currentTimeMillis()
     val job = GlobalScope.launch(Dispatchers.Default) {
         var nextPrintTime = startTime
@@ -75,7 +66,7 @@ private suspend fun coroutineCancellationCase3() {
     println("main: Now I can quit.")
 }
 
-private suspend fun coroutineCancellationCase4() {
+suspend fun coroutineCancellationCase4() {
     val job = GlobalScope.launch {
         try {
             repeat(1000) { i ->
@@ -94,7 +85,7 @@ private suspend fun coroutineCancellationCase4() {
 // End Cooperative cancellation
 
 // Start Timeout cancellation
-private suspend fun coroutineCancellationCase5() {
+suspend fun coroutineCancellationCase5() {
     withTimeout(1300L) {
         repeat(1000) { i ->
             println("I'm sleeping $i ...")
@@ -103,7 +94,7 @@ private suspend fun coroutineCancellationCase5() {
     }
 }
 
-private suspend fun coroutineCancellationCase6() {
+suspend fun coroutineCancellationCase6() {
     val result = withTimeoutOrNull(1300L) {
         repeat(1000) { i ->
             println("I'm sleeping $i - ${System.currentTimeMillis()}")
@@ -118,7 +109,7 @@ private suspend fun coroutineCancellationCase6() {
 // End Timeout cancellation
 
 // Start Parent-child hierarchy cancellation
-private suspend fun coroutineCancellationCase7() {
+suspend fun coroutineCancellationCase7() {
     val job = Job()
     val coroutineScope = CoroutineScope(Dispatchers.Default + job)
 
@@ -144,7 +135,7 @@ private suspend fun coroutineCancellationCase7() {
     //job.cancel()
 }
 
-private suspend fun coroutineCancellationCase8() {
+suspend fun coroutineCancellationCase8() {
     val job = Job()
     val coroutineScope = CoroutineScope(Dispatchers.Default + job)
 
@@ -168,13 +159,13 @@ private suspend fun coroutineCancellationCase8() {
 // End Parent-child hierarchy cancellation
 
 // Start job cancellation
-private suspend fun coroutineCancellationCase12() {
+suspend fun coroutineCancellationCase9() {
     val job = Job()
     val coroutineScope = CoroutineScope(Dispatchers.Default + job)
 
     coroutineScope.launch {
-            delay(1000L)
-            println("job running")
+        delay(1000L)
+        println("job running")
     }
 
     delay(3000L)
@@ -184,9 +175,8 @@ private suspend fun coroutineCancellationCase12() {
 // End job cancellation
 
 
-
 // Other case
-private suspend fun coroutineCancellationCase11() {
+suspend fun coroutineCancellationCase10() {
     val job = Job()
     val coroutineScope = CoroutineScope(Dispatchers.Default + job)
 
@@ -200,16 +190,29 @@ private suspend fun coroutineCancellationCase11() {
         deferred.await()
     }
 }
-private suspend fun coroutineCancellationCase9(): Boolean {
-    return suspendCoroutine {
-        Thread.sleep(1000L)
-        it.resume(true)
+
+suspend fun coroutineCancellationCase11() {
+    withTimeout(2000L) {
+        suspendCoroutineCase()
     }
 }
 
-private suspend fun coroutineCancellationCase10(): Boolean {
+suspend fun coroutineCancellationCase12() {
+    withTimeout(2000L) {
+        suspendCancellableCoroutineCase()
+    }
+}
+
+private suspend fun suspendCoroutineCase(): Boolean {
+    return suspendCoroutine {
+        Thread.sleep(3000L)
+        it.resume(true).also { println("suspendCoroutineCase resume") }
+    }
+}
+
+private suspend fun suspendCancellableCoroutineCase(): Boolean {
     return suspendCancellableCoroutine {
-        Thread.sleep(1000L)
+        Thread.sleep(3000L)
         it.resume(true)
         it.invokeOnCancellation {
             println("invokeOnCancellation")
