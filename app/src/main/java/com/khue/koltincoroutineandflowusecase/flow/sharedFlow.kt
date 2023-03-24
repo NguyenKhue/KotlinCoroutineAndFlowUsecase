@@ -88,19 +88,21 @@ suspend fun createSharedFlow2() {
 }
 
 suspend fun createSharedFlow3() {
-    val sharedFlow = MutableSharedFlow<Int>(extraBufferCapacity = 1, replay = 1, onBufferOverflow = BufferOverflow.SUSPEND)
+    val sharedFlow = MutableSharedFlow<Int>(extraBufferCapacity = 1, replay = 1, onBufferOverflow = BufferOverflow.DROP_LATEST)
 
     CoroutineScope(Dispatchers.IO).launch {
         launch(Dispatchers.IO) {
+            println("start collect")
             sharedFlow.collect {
                 println("First subscriber received: $it")
             }
         }
         launch(Dispatchers.IO) {
-            delay(100)
             sharedFlow.emit(1).also { println("relayCache: ${sharedFlow.replayCache}") }
             sharedFlow.emit(2).also { println("relayCache: ${sharedFlow.replayCache}") }
             sharedFlow.emit(3).also { println("relayCache: ${sharedFlow.replayCache}") }
+            sharedFlow.emit(4).also { println("relayCache: ${sharedFlow.replayCache}") }
+            sharedFlow.emit(5).also { println("relayCache: ${sharedFlow.replayCache}") }
         }
     }
 }
