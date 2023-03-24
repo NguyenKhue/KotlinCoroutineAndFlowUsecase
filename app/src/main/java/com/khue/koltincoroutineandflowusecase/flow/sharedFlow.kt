@@ -65,7 +65,7 @@ suspend fun createSharedFlow1() {
 }
 
 suspend fun createSharedFlow2() {
-    val sharedFlow = MutableSharedFlow<Int>(extraBufferCapacity = 5, replay = 2, onBufferOverflow = BufferOverflow.DROP_LATEST)
+    val sharedFlow = MutableSharedFlow<Int>(extraBufferCapacity = 3, replay = 2, onBufferOverflow = BufferOverflow.DROP_LATEST)
 
     CoroutineScope(Dispatchers.IO).launch {
         launch(Dispatchers.IO) {
@@ -74,17 +74,33 @@ suspend fun createSharedFlow2() {
             sharedFlow.tryEmit(3).also { println("relayCache: ${sharedFlow.replayCache}") }
             sharedFlow.tryEmit(4).also { println("relayCache: ${sharedFlow.replayCache}") }
             sharedFlow.tryEmit(5).also { println("relayCache: ${sharedFlow.replayCache}") }
-            delay(500)
             sharedFlow.tryEmit(6).also { println("relayCache: ${sharedFlow.replayCache}") }
             sharedFlow.tryEmit(7).also { println("relayCache: ${sharedFlow.replayCache}") }
             sharedFlow.tryEmit(8).also { println("relayCache: ${sharedFlow.replayCache}") }
             sharedFlow.tryEmit(9).also { println("relayCache: ${sharedFlow.replayCache}") }
         }
         launch(Dispatchers.IO) {
-            delay(500L)
             sharedFlow.collect {
                 println("sharedFlow: $it")
             }
+        }
+    }
+}
+
+suspend fun createSharedFlow3() {
+    val sharedFlow = MutableSharedFlow<Int>(extraBufferCapacity = 1, replay = 1, onBufferOverflow = BufferOverflow.SUSPEND)
+
+    CoroutineScope(Dispatchers.IO).launch {
+        launch(Dispatchers.IO) {
+            sharedFlow.collect {
+                println("First subscriber received: $it")
+            }
+        }
+        launch(Dispatchers.IO) {
+            delay(100)
+            sharedFlow.emit(1).also { println("relayCache: ${sharedFlow.replayCache}") }
+            sharedFlow.emit(2).also { println("relayCache: ${sharedFlow.replayCache}") }
+            sharedFlow.emit(3).also { println("relayCache: ${sharedFlow.replayCache}") }
         }
     }
 }

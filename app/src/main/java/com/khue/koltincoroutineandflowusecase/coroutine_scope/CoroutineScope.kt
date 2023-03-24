@@ -1,4 +1,4 @@
-package com.khue.koltincoroutineandflowusecase
+package com.khue.koltincoroutineandflowusecase.coroutine_scope
 
 import kotlinx.coroutines.*
 

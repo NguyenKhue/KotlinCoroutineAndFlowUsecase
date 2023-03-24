@@ -14,7 +14,7 @@ fun main() = runBlocking(handler) {
     delay(10000L)
 }
 
-private suspend fun coroutineException() {
+suspend fun coroutineException() {
     val job = Job()
     val coroutineScope = CoroutineScope(Dispatchers.Default + job)
 
@@ -31,7 +31,7 @@ private suspend fun coroutineException() {
     }
 }
 
-private suspend fun coroutineException2() {
+suspend fun coroutineException2() {
     val job = SupervisorJob()
     val coroutineScope = CoroutineScope(job + handler)
 
@@ -48,7 +48,7 @@ private suspend fun coroutineException2() {
     }
 }
 
-private suspend fun coroutineException3() {
+suspend fun coroutineException3() {
     val job = SupervisorJob()
     val coroutineScope = CoroutineScope(job + handler)
 
@@ -63,7 +63,7 @@ private suspend fun coroutineException3() {
     }
 }
 
-private suspend fun coroutineException4() {
+suspend fun coroutineException4() {
     CoroutineScope(handler).launch {
         supervisorScope {
             launch {

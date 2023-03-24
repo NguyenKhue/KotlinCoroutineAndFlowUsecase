@@ -11,6 +11,6 @@ private val handler = CoroutineExceptionHandler { _, exception ->
 }
 
 private fun main() = runBlocking(handler) {
-    createSharedFlow2()
+    createSharedFlow3()
     delay(10000L)
 }
